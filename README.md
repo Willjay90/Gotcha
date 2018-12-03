@@ -6,8 +6,7 @@
 This project is motivated by [Google Map AR extention](https://youtu.be/ogfYd705cRs?t=5098) in Google I/O 18 and [Sharing AR Experience](https://www.apple.com/newsroom/2018/06/apple-unveils-arkit-2/?videoid=0e9ddba360be9dd77ac4881ea2fa6cdb) with ARKit 2 in WWDC 2018. 
 The goal is to create a indoor guidance system to help users locate items in a grocery store. 
 
-<img src="https://github.com/Weijay/Gotcha/blob/master/resources/GoogleMapAR.png" width="250" height="400"/> 
-<img src="https://github.com/Weijay/Gotcha/blob/master/resources/SharingARWorld.png" width="250" height="400"/>  <img src="https://github.com/Weijay/Gotcha/blob/master/resources/faceRecognition.gif" />
+<img src="https://github.com/Willjay90/Gotcha/blob/master/resources/GoogleMapAR.png" width="250" height="400"/> <img src="https://github.com/Willjay90/Gotcha/blob/master/resources/SharingARWorld.png" width="250" height="400"/>  <img src="https://github.com/Willjay90/Gotcha/blob/master/resources/faceRecognition.gif" />
 
 
 ---
@@ -22,9 +21,7 @@ The goal is to create a indoor guidance system to help users locate items in a g
 - Delay when sharing ARWorld
 
 ## Demo
-<img src="https://github.com/Weijay/Gotcha/blob/master/resources/FirstView.png" width="250" height="400"/>
-<img src="https://github.com/Weijay/Gotcha/blob/master/resources/Host.gif" width="250" height="400"/>
-<img src="https://github.com/Weijay/Gotcha/blob/master/resources/User.gif" width="250" height="400"/>
+<img src="https://github.com/Willjay90/Gotcha/blob/master/resources/FirstView.png" width="250" height="400"/><img src="https://github.com/Willjay90/Gotcha/blob/master/resources/Host.gif" width="250" height="400"/> <img src="https://github.com/Willjay90/Gotcha/blob/master/resources/User.gif" width="250" height="400"/>
 
 
 ## References
