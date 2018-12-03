@@ -7,15 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		28139F67216EFF68002CC747 /* Inceptionv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 28139F66216EFF68002CC747 /* Inceptionv3.mlmodel */; };
+		28139F69216F06AA002CC747 /* StatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28139F68216F06AA002CC747 /* StatusViewController.swift */; };
+		28139F6B216F0D77002CC747 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28139F6A216F0D77002CC747 /* Utilities.swift */; };
+		28139F6D216F1B06002CC747 /* MultipeerSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28139F6C216F1B06002CC747 /* MultipeerSession.swift */; };
 		282BC22321642BAA003985DF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282BC22221642BAA003985DF /* AppDelegate.swift */; };
 		282BC22521642BAA003985DF /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 282BC22421642BAA003985DF /* art.scnassets */; };
 		282BC22721642BAA003985DF /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282BC22621642BAA003985DF /* ViewController.swift */; };
 		282BC22A21642BAA003985DF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 282BC22821642BAA003985DF /* Main.storyboard */; };
 		282BC22C21642BAA003985DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 282BC22B21642BAA003985DF /* Assets.xcassets */; };
 		282BC22F21642BAA003985DF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 282BC22D21642BAA003985DF /* LaunchScreen.storyboard */; };
+		28A628282176AC3300BBD474 /* ItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A628272176AC3300BBD474 /* ItemModel.swift */; };
+		28A6282A2176ADC900BBD474 /* ItemListTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A628292176ADC900BBD474 /* ItemListTableViewController.swift */; };
+		28F7A73B21B4C60D0086BC73 /* googleMapAR.mov in Resources */ = {isa = PBXBuildFile; fileRef = 28F7A73A21B4C60D0086BC73 /* googleMapAR.mov */; };
+		28F7A73D21B4C6910086BC73 /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F7A73C21B4C6910086BC73 /* IntroViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		28139F66216EFF68002CC747 /* Inceptionv3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = Inceptionv3.mlmodel; sourceTree = "<group>"; };
+		28139F68216F06AA002CC747 /* StatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusViewController.swift; sourceTree = "<group>"; };
+		28139F6A216F0D77002CC747 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		28139F6C216F1B06002CC747 /* MultipeerSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipeerSession.swift; sourceTree = "<group>"; };
 		282BC21F21642BAA003985DF /* Gotcha.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gotcha.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		282BC22221642BAA003985DF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		282BC22421642BAA003985DF /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -24,6 +36,10 @@
 		282BC22B21642BAA003985DF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		282BC22E21642BAA003985DF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		282BC23021642BAA003985DF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		28A628272176AC3300BBD474 /* ItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemModel.swift; sourceTree = "<group>"; };
+		28A628292176ADC900BBD474 /* ItemListTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemListTableViewController.swift; sourceTree = "<group>"; };
+		28F7A73A21B4C60D0086BC73 /* googleMapAR.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = googleMapAR.mov; sourceTree = "<group>"; };
+		28F7A73C21B4C6910086BC73 /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,12 +75,36 @@
 				282BC22221642BAA003985DF /* AppDelegate.swift */,
 				282BC22421642BAA003985DF /* art.scnassets */,
 				282BC22621642BAA003985DF /* ViewController.swift */,
+				28F7A73921B116C40086BC73 /* ItemListModel */,
+				28F7A73821B116A50086BC73 /* MultiPeer */,
+				28139F6A216F0D77002CC747 /* Utilities.swift */,
+				28139F68216F06AA002CC747 /* StatusViewController.swift */,
+				28139F66216EFF68002CC747 /* Inceptionv3.mlmodel */,
 				282BC22821642BAA003985DF /* Main.storyboard */,
+				28F7A73C21B4C6910086BC73 /* IntroViewController.swift */,
+				28F7A73A21B4C60D0086BC73 /* googleMapAR.mov */,
 				282BC22B21642BAA003985DF /* Assets.xcassets */,
 				282BC22D21642BAA003985DF /* LaunchScreen.storyboard */,
 				282BC23021642BAA003985DF /* Info.plist */,
 			);
 			path = Gotcha;
+			sourceTree = "<group>";
+		};
+		28F7A73821B116A50086BC73 /* MultiPeer */ = {
+			isa = PBXGroup;
+			children = (
+				28139F6C216F1B06002CC747 /* MultipeerSession.swift */,
+			);
+			path = MultiPeer;
+			sourceTree = "<group>";
+		};
+		28F7A73921B116C40086BC73 /* ItemListModel */ = {
+			isa = PBXGroup;
+			children = (
+				28A628272176AC3300BBD474 /* ItemModel.swift */,
+				28A628292176ADC900BBD474 /* ItemListTableViewController.swift */,
+			);
+			path = ItemListModel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -126,6 +166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				282BC22521642BAA003985DF /* art.scnassets in Resources */,
+				28F7A73B21B4C60D0086BC73 /* googleMapAR.mov in Resources */,
 				282BC22F21642BAA003985DF /* LaunchScreen.storyboard in Resources */,
 				282BC22C21642BAA003985DF /* Assets.xcassets in Resources */,
 				282BC22A21642BAA003985DF /* Main.storyboard in Resources */,
@@ -139,7 +180,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				28F7A73D21B4C6910086BC73 /* IntroViewController.swift in Sources */,
+				28139F6D216F1B06002CC747 /* MultipeerSession.swift in Sources */,
+				28139F69216F06AA002CC747 /* StatusViewController.swift in Sources */,
+				28A6282A2176ADC900BBD474 /* ItemListTableViewController.swift in Sources */,
 				282BC22721642BAA003985DF /* ViewController.swift in Sources */,
+				28139F67216EFF68002CC747 /* Inceptionv3.mlmodel in Sources */,
+				28139F6B216F0D77002CC747 /* Utilities.swift in Sources */,
+				28A628282176AC3300BBD474 /* ItemModel.swift in Sources */,
 				282BC22321642BAA003985DF /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -286,17 +334,20 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = YMQ7S58LN7;
 				INFOPLIST_FILE = Gotcha/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = willjay.com.Gotcha;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -304,17 +355,20 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = YMQ7S58LN7;
 				INFOPLIST_FILE = Gotcha/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = willjay.com.Gotcha;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.2;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
