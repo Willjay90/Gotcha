@@ -19,6 +19,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @IBOutlet weak var sessionInfoView: UIVisualEffectView!
     @IBOutlet weak var sessionInfoLabel: UILabel!
     @IBOutlet weak var detectBtn: UIButton!
+    @IBOutlet weak var restoreBtn: UIButton!
+    @IBOutlet weak var saveBtn: UIButton!
     
     public var isHost = false
     
@@ -31,8 +33,20 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }()
 
     private var tapGestureRecognizer: UITapGestureRecognizer!
-    
+    private var doubletapGestureRecognizer: UITapGestureRecognizer!
+
     public var mapProvider: MCPeerID?
+    
+    
+    // host: saving & restore the currentWorldMap
+    var worldMapURL: URL = {
+        do {
+            return try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+                .appendingPathComponent("worldMapURL")
+        } catch {
+            fatalError("Error getting world map URL from document directory.")
+        }
+    }()
     
     // TAG: - Vision classification
     private lazy var classificationRequest: VNCoreMLRequest = {
@@ -69,16 +83,25 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         detectBtn.isHidden = !isHost
-        
+        restoreBtn.isHidden = !isHost
+        saveBtn.isHidden = !isHost
+        restoreBtn.isEnabled = retrieveWorldMapData(from: worldMapURL) != nil
         // setup P2P
         multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
         
         // setup user feedback
-        setupListTableView()
+        setupContainerView()
         
         // setup gesture recognizer
         tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapped))
+        tapGestureRecognizer.numberOfTapsRequired = 1
+        doubletapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTapped))
+        doubletapGestureRecognizer.numberOfTapsRequired = 2
+        tapGestureRecognizer.require(toFail: doubletapGestureRecognizer)
+        
         sceneView.addGestureRecognizer(tapGestureRecognizer)
+        sceneView.addGestureRecognizer(doubletapGestureRecognizer)
+
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -93,34 +116,57 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause()
     }
     
+    @IBAction func saveBtnHandler(_ sender: UIButton) {
+        saveCurrentWorldMap()
+    }
+    
+    @IBAction func restoreBtnHandler(_ sender: UIButton) {
+        guard let worldMapData = retrieveWorldMapData(from: worldMapURL),
+            let worldMap = unarchive(worldMapData: worldMapData) else { return }
+        restore(worldMap: worldMap)
+    }
+    
     // MARK: - Item List View
-    private var tableViewHeightConstraints: NSLayoutConstraint!
-    private func setupListTableView() {
-        let listViewTableViewController = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ItemList") as! ItemListTableViewController
-        self.addChild(listViewTableViewController)
-        listViewTableViewController.delegate = self
+    private var itemListHeightConstraint: NSLayoutConstraint!
+
+    private func setupContainerView() {
+        let lisViewController = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "CollectionView") as! ItemListCollectionViewController
+        self.addChild(lisViewController)
+        lisViewController.delegate = self
         
-        listViewTableViewController.view.translatesAutoresizingMaskIntoConstraints = false
-        sceneView.addSubview(listViewTableViewController.view)
-        sceneView.bringSubviewToFront(listViewTableViewController.view)
+        lisViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        sceneView.addSubview(lisViewController.view)
+        sceneView.bringSubviewToFront(lisViewController.view)
         
-        tableViewHeightConstraints = listViewTableViewController.view.heightAnchor.constraint(equalToConstant: 0)
-        
+        itemListHeightConstraint = lisViewController.view.heightAnchor.constraint(equalToConstant: 0)
+
         NSLayoutConstraint.activate([
-            listViewTableViewController.view.bottomAnchor.constraint(equalTo: sceneView.bottomAnchor),
-            listViewTableViewController.view.rightAnchor.constraint(equalTo: sceneView.rightAnchor),
-            listViewTableViewController.view.leftAnchor.constraint(equalTo: sceneView.leftAnchor),
-            tableViewHeightConstraints
+            lisViewController.view.bottomAnchor.constraint(equalTo: sceneView.bottomAnchor),
+            lisViewController.view.rightAnchor.constraint(equalTo: sceneView.rightAnchor),
+            lisViewController.view.leftAnchor.constraint(equalTo: sceneView.leftAnchor),
+            itemListHeightConstraint
             ])
+
     }
     
     @objc func handleTapped(_ notification: UITapGestureRecognizer) {
-        tableViewHeightConstraints.constant = sceneView.frame.height - 100
-        sceneView.removeGestureRecognizer(tapGestureRecognizer)
+        itemListHeightConstraint.constant =  200
+        
         UIView.animate(withDuration: 0.8) {
             self.view.layoutIfNeeded()
             self.detectBtn.isHidden = true
         }
+        sceneView.removeGestureRecognizer(tapGestureRecognizer)
+    }
+    
+    @objc func handleDoubleTapped(_ notification: UITapGestureRecognizer) {
+        itemListHeightConstraint.constant = 0
+
+        UIView.animate(withDuration: 0.8) {
+            self.view.layoutIfNeeded()
+            self.detectBtn.isHidden = false
+        }
+        sceneView.addGestureRecognizer(tapGestureRecognizer)
     }
     
     @IBAction func shareSession(_ sender: UIButton) {
@@ -151,10 +197,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private func startARSession() {
         // Start the view's AR session with a configuration that uses the rear camera,
         // device position and orientation tracking, and plane detection.
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.worldAlignment = .gravityAndHeading
-        configuration.planeDetection = [.horizontal, .vertical]
-        sceneView.session.run(configuration)
+        resetTrackingConfiguration()
         
         // Set a delegate to track the number of plane anchors for providing UI feedback.
         sceneView.delegate = self
@@ -166,8 +209,62 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         UIApplication.shared.isIdleTimerDisabled = true
         
         // Show debug UI to view performance metrics (e.g. frames per second).
-        sceneView.showsStatistics = true
-        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+//        sceneView.showsStatistics = true
+//        sceneView.debugOptions = [.showFeaturePoints]
+    }
+    
+    private func resetTrackingConfiguration(worldMap: ARWorldMap? = nil) {
+        let configuration = ARWorldTrackingConfiguration()
+        configuration.worldAlignment = .gravityAndHeading
+        configuration.planeDetection = [.horizontal, .vertical]
+        configuration.initialWorldMap = worldMap
+        
+        let options: ARSession.RunOptions = [.resetTracking, .removeExistingAnchors]
+        
+        sceneView.session.run(configuration, options: options)
+    }
+    
+    private func saveCurrentWorldMap() {
+        sceneView.session.getCurrentWorldMap { (worldMap, error) in
+            guard let worldMap = worldMap else { return }
+            
+            do {
+                try self.archive(worldMap: worldMap)
+            } catch {
+                fatalError("Error saving world map: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func restore(worldMap: ARWorldMap) {
+        resetTrackingConfiguration(worldMap: worldMap)
+        // re-add ItemModel
+        for anchor in worldMap.anchors {
+            if let name = anchor.name, !name.isEmpty {
+                ItemModel.shared.anchors.append((name, anchor))
+            }
+        }
+    }
+    
+    private func retrieveWorldMapData(from url: URL) -> Data? {
+        do {
+            return try Data(contentsOf: self.worldMapURL)
+        } catch {
+            print("Error retrieving world map data.")
+            return nil
+        }
+    }
+    
+    // Archive and Unarchive WorldMap
+    private func archive(worldMap: ARWorldMap) throws {
+        let data = try NSKeyedArchiver.archivedData(withRootObject: worldMap, requiringSecureCoding: true)
+        try data.write(to: self.worldMapURL, options: [.atomic])
+    }
+    
+    private func unarchive(worldMapData data: Data) -> ARWorldMap? {
+        guard let unarchievedObject = try? NSKeyedUnarchiver.unarchivedObject(ofClass: ARWorldMap.self, from: data),
+            let worldMap = unarchievedObject else { return nil }
+        return worldMap
     }
     
     /// add ARAnchor onto current plane
@@ -180,7 +277,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.add(anchor: anchor)
         // add to item model
         ItemModel.shared.anchors.append((identifierString, anchor))
-
         
         // Send the anchor info to peers, so they can place the same content.
         guard let data = try? NSKeyedArchiver.archivedData(withRootObject: anchor, requiringSecureCoding: true)
@@ -197,19 +293,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             return textNode
         }
 
-//        if let name = anchor.name, name == "guide", target != nil {
-//            let desNode = SCNNode()
-//            desNode.position = SCNVector3.positionFromTransform(target.1.transform)
-//            print("O=HOAL")
-//
-//            let guideNode = loadObject()
-//            guideNode.scale = SCNVector3(0.8, 0.8, 0.8)
-//            let lookAtConstraints = SCNLookAtConstraint(target: desNode)
-//            lookAtConstraints.isGimbalLockEnabled = true
-//            guideNode.constraints = [lookAtConstraints]
-//            return guideNode
-//        }
-
         return nil
     }
 
@@ -217,6 +300,33 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
 // MARK: - Vision Task
 extension ViewController {
+    
+    // Host can tag item when objection recognition is not working
+    private func tagByUserInput() {
+        let title = "UNIDETIFIED"
+        let msg = "Please enter the item"
+        
+        let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
+        alert.addTextField(configurationHandler: nil)
+        
+        let ok = UIAlertAction(title: "OK", style: .default) { (_) in
+            if let textField = alert.textFields?.first, let value = textField.text {
+                self.identifierString = value
+                self.placeObjectNode()
+            }
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .default, handler: nil)
+        
+        alert.addAction(ok)
+        alert.addAction(cancel)
+        
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil)
+        }
+        
+        
+    }
+
     
     // Run the Vision+ML classifier on the current image buffer.
     public func classifyCurrentImage() {
@@ -251,14 +361,20 @@ extension ViewController {
             let label = bestResult.identifier.split(separator: ",").first {
             identifierString = String(label)
             confidence = bestResult.confidence
-        } else {
-            identifierString = ""
-            confidence = 0
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.displayClassifierResults()
+            }
+            
         }
         
-        DispatchQueue.main.async { [weak self] in
-            self?.displayClassifierResults()
+        else {
+            identifierString = ""
+            confidence = 0
+            tagByUserInput()
         }
+        
+        
     }
     
     // Show the classification results in the UI.
@@ -306,9 +422,9 @@ extension ViewController: ARSessionDelegate {
             
             if isHost {
                 sendMapButton.isHidden = multipeerSession.connectedPeers.isEmpty
-                Timer.scheduledTimer(withTimeInterval: 3000, repeats: false) { (_) in
-                    self.shareARWorldMap()
-                }
+//                Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { (_) in
+//                    self.shareARWorldMap()
+//                }
             }
             
             
@@ -349,16 +465,15 @@ extension ViewController {
     func receivedData(_ data: Data, from peer: MCPeerID) {
         if let unarchived = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [ARWorldMap.classForKeyedArchiver()!], from: data),
             let worldMap = unarchived as? ARWorldMap {
+            
             // Remember who provided the map for showing UI feedback.
             mapProvider = peer
             print("Received Data From Peer", peer.displayName)
             
             // Run the session with the received world map.
-            let configuration = ARWorldTrackingConfiguration()
-            configuration.planeDetection = [.horizontal, .vertical]
-            configuration.initialWorldMap = worldMap
-            sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+            resetTrackingConfiguration(worldMap: worldMap)
             
+            // re-add ItemModel
             for anchor in worldMap.anchors {
                 if let name = anchor.name, !name.isEmpty {
                     ItemModel.shared.anchors.append((name, anchor))
@@ -425,7 +540,7 @@ extension ViewController: ItemListDragProtocol {
     }
     
     public func closeItemList() {
-        tableViewHeightConstraints.constant = 0
+        itemListHeightConstraint.constant = 0
         UIView.animate(withDuration: 0.5) {
             self.view.layoutIfNeeded()
             self.detectBtn.isHidden = false
@@ -433,36 +548,33 @@ extension ViewController: ItemListDragProtocol {
         sceneView.addGestureRecognizer(tapGestureRecognizer)
     }
     
-    /// TODO: It's not right :(, need to modify
     public func showDirection(of object: arItemList) {
+
+        guard let pointOfView = sceneView.pointOfView else { return }
         
-//            let screenCentre : CGPoint = CGPoint(x: self.sceneView.bounds.midX, y: self.sceneView.bounds.midY)
-//            guard let hitTestResult = sceneView.hitTest(screenCentre, types: [.featurePoint]).first else { return }
-//            let startPoint = SCNVector3.positionFromTransform(hitTestResult.worldTransform)
+        // remove previous instruction
+        for node in pointOfView.childNodes {
+            node.removeFromParentNode()
+        }
         
+        // target
+        let desNode = SCNNode()
         let targetPoint = SCNVector3.positionFromTransform(object.1.transform)
-        
-        let g = SCNSphere(radius: 0.01)
-        g.firstMaterial?.diffuse.contents = UIColor.red
-        let desNode = SCNNode(geometry: g)
         desNode.worldPosition = targetPoint
-        sceneView.scene.rootNode.addChildNode(desNode)
         
-        
-//            let anchor = ARAnchor(name: "guide", transform: hitTestResult.worldTransform)
-//            sceneView.session.add(anchor: anchor)
-//            target = object
-//            sceneView.scene.rootNode.addChildNode(guideNode)
-        
+        // guide
         let startPoint = SCNVector3(0, 0 , -1.0)
         let guideNode = loadObject()
-        guideNode.scale = SCNVector3(0.5, 0.5, 0.5)
+        guideNode.scale = SCNVector3(0.7, 0.7, 0.7)
         guideNode.position = startPoint
+        
         let lookAtConstraints = SCNLookAtConstraint(target: desNode)
         lookAtConstraints.isGimbalLockEnabled = true
-        guideNode.constraints = [lookAtConstraints]
+        // Here's the magic
+        guideNode.pivot = SCNMatrix4Rotate(guideNode.pivot, Float.pi, 0, 1, 1)
         
-        sceneView.pointOfView?.addChildNode(guideNode)
+        guideNode.constraints = [lookAtConstraints]
+        pointOfView.addChildNode(guideNode)
     }
     
 }

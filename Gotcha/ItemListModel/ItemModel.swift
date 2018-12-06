@@ -10,6 +10,11 @@ import ARKit
 
 typealias arItemList = (String, ARAnchor)
 
+protocol ItemListDragProtocol: class {
+    func closeItemList()
+    func showDirection(of object: arItemList)
+}
+
 class ItemModel {
     
     static let shared = ItemModel()
