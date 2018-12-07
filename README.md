@@ -1,4 +1,4 @@
-# Indoor Guidance Application with Augmented Reality
+# Indoor Item Locator using Augmented Reality
 ![ios12+](https://img.shields.io/badge/ios-12%2B-blue.svg)
 ![swift4+](https://img.shields.io/badge/swift-4%2B-orange.svg)
 ![arkit2](https://img.shields.io/badge/arkit-2-brightgreen.svg)
