@@ -23,7 +23,7 @@ The goal is to create a indoor guidance system to help users locate items in a g
 
 
 ## Demo
-[![Demo_Video](https://github.com/Willjay90/Gotcha/blob/master/resources/FirstView.png)](https://youtu.be/jRBHVMcQzR0)
+[![Demo_Video](https://github.com/Willjay90/Gotcha/blob/master/resources/youtube_demo.png)](https://youtu.be/jRBHVMcQzR0)
 
 ## Hint
 - single click on screen to show the item list
