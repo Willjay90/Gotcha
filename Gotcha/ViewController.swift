@@ -26,7 +26,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     private var multipeerSession: MultipeerSession!
     
-    private var target: arItemList!
+    private var target: ARItem!
     
     private lazy var statusViewController: StatusViewController = {
         return children.lazy.compactMap({ $0 as? StatusViewController }).first!
@@ -37,6 +37,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     public var mapProvider: MCPeerID?
     
+    lazy var listViewController: ItemListCollectionViewController = {
+        let listViewController = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "CollectionView") as! ItemListCollectionViewController
+        return listViewController
+    }()
     
     // host: saving & restore the currentWorldMap
     var worldMapURL: URL = {
@@ -130,43 +134,43 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var itemListHeightConstraint: NSLayoutConstraint!
 
     private func setupContainerView() {
-        let lisViewController = UIStoryboard.init(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "CollectionView") as! ItemListCollectionViewController
-        self.addChild(lisViewController)
-        lisViewController.delegate = self
+        addChild(listViewController)
+        listViewController.delegate = self
         
-        lisViewController.view.translatesAutoresizingMaskIntoConstraints = false
-        sceneView.addSubview(lisViewController.view)
-        sceneView.bringSubviewToFront(lisViewController.view)
+        listViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        sceneView.addSubview(listViewController.view)
+        sceneView.bringSubviewToFront(listViewController.view)
         
-        itemListHeightConstraint = lisViewController.view.heightAnchor.constraint(equalToConstant: 0)
+        itemListHeightConstraint = listViewController.view.heightAnchor.constraint(equalToConstant: 0)
 
         NSLayoutConstraint.activate([
-            lisViewController.view.bottomAnchor.constraint(equalTo: sceneView.bottomAnchor),
-            lisViewController.view.rightAnchor.constraint(equalTo: sceneView.rightAnchor),
-            lisViewController.view.leftAnchor.constraint(equalTo: sceneView.leftAnchor),
+            listViewController.view.bottomAnchor.constraint(equalTo: sceneView.bottomAnchor),
+            listViewController.view.rightAnchor.constraint(equalTo: sceneView.rightAnchor),
+            listViewController.view.leftAnchor.constraint(equalTo: sceneView.leftAnchor),
             itemListHeightConstraint
             ])
 
     }
     
     @objc func handleTapped(_ notification: UITapGestureRecognizer) {
+        sceneView.removeGestureRecognizer(tapGestureRecognizer)
         itemListHeightConstraint.constant =  200
         
         UIView.animate(withDuration: 0.8) {
             self.view.layoutIfNeeded()
             self.detectBtn.isHidden = true
+            self.listViewController.collectionView.reloadData()
         }
-        sceneView.removeGestureRecognizer(tapGestureRecognizer)
     }
     
     @objc func handleDoubleTapped(_ notification: UITapGestureRecognizer) {
+        sceneView.addGestureRecognizer(tapGestureRecognizer)
         itemListHeightConstraint.constant = 0
 
         UIView.animate(withDuration: 0.8) {
             self.view.layoutIfNeeded()
             self.detectBtn.isHidden = false
         }
-        sceneView.addGestureRecognizer(tapGestureRecognizer)
     }
     
     @IBAction func shareSession(_ sender: UIButton) {
@@ -184,7 +188,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     private func shareARWorldMap() {
-        if ItemModel.shared.anchors.isEmpty { return }
+        if ItemModel.shared.getList().isEmpty { return }
         sceneView.session.getCurrentWorldMap { worldMap, error in
             guard let map = worldMap
                 else { print("Error: \(error!.localizedDescription)"); return }
@@ -241,7 +245,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // re-add ItemModel
         for anchor in worldMap.anchors {
             if let name = anchor.name, !name.isEmpty {
-                ItemModel.shared.anchors.append((name, anchor))
+                ItemModel.shared.addItem(name: identifierString, anchor: anchor)
             }
         }
     }
@@ -275,8 +279,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Place an anchor for a virtual character.
         let anchor = ARAnchor(name: identifierString, transform: hitTestResult.worldTransform)
         sceneView.session.add(anchor: anchor)
+        
+        print("adding item:", identifierString)
         // add to item model
-        ItemModel.shared.anchors.append((identifierString, anchor))
+        ItemModel.shared.addItem(name: identifierString, anchor: anchor)
         
         // Send the anchor info to peers, so they can place the same content.
         guard let data = try? NSKeyedArchiver.archivedData(withRootObject: anchor, requiringSecureCoding: true)
@@ -303,7 +309,7 @@ extension ViewController {
     
     // Host can tag item when objection recognition is not working
     private func tagByUserInput() {
-        let title = "UNIDETIFIED"
+        let title = "UNIDENTIFIED"
         let msg = "Please enter the item"
         
         let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
@@ -317,13 +323,13 @@ extension ViewController {
         }
         let cancel = UIAlertAction(title: "Cancel", style: .default, handler: nil)
         
-        alert.addAction(ok)
         alert.addAction(cancel)
+        alert.addAction(ok)
         
+        // show the alert in the main thread
         DispatchQueue.main.async {
             self.present(alert, animated: true, completion: nil)
         }
-        
         
     }
 
@@ -476,7 +482,7 @@ extension ViewController {
             // re-add ItemModel
             for anchor in worldMap.anchors {
                 if let name = anchor.name, !name.isEmpty {
-                    ItemModel.shared.anchors.append((name, anchor))
+                    ItemModel.shared.addItem(name: identifierString, anchor: anchor)
                 }
             }
             
@@ -548,7 +554,7 @@ extension ViewController: ItemListDragProtocol {
         sceneView.addGestureRecognizer(tapGestureRecognizer)
     }
     
-    public func showDirection(of object: arItemList) {
+    public func showDirection(of object: ARItem) {
 
         guard let pointOfView = sceneView.pointOfView else { return }
         
@@ -559,7 +565,7 @@ extension ViewController: ItemListDragProtocol {
         
         // target
         let desNode = SCNNode()
-        let targetPoint = SCNVector3.positionFromTransform(object.1.transform)
+        let targetPoint = SCNVector3.positionFromTransform(object.anchor.transform)
         desNode.worldPosition = targetPoint
         
         // guide

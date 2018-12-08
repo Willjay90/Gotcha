@@ -15,21 +15,7 @@ class ItemListCollectionViewController: UICollectionViewController {
     weak var delegate: ItemListDragProtocol?
     
     override func viewDidLoad() {
-        
         super.viewDidLoad()
-        // listen to item changes
-        NotificationCenter.default.addObserver(self, selector: #selector(updateDataSource), name: Notification.Name("ITEM_CHANGE"), object: nil)
-        
-    }
-
-    @objc func updateDataSource() {
-        collectionView.reloadData()
-    }
-    
-    @objc func handlePan(_ pan: UIPanGestureRecognizer) {
-        if pan.translation(in: collectionView).y > 50  && pan.state == .ended {
-            delegate?.closeItemList()
-        }
     }
     
     // MARK: UICollectionViewDataSource
@@ -40,13 +26,13 @@ class ItemListCollectionViewController: UICollectionViewController {
 
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return ItemModel.shared.anchors.count
+        return ItemModel.shared.getList().count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
         if let label = cell.viewWithTag(1) as? UILabel {
-            label.text = ItemModel.shared.anchors[indexPath.row].0
+            label.text = ItemModel.shared.getList()[indexPath.row].name
         }
         cell.backgroundColor = UIColor.green.withAlphaComponent(0.45)
         cell.layer.cornerRadius = 20
@@ -56,9 +42,19 @@ class ItemListCollectionViewController: UICollectionViewController {
     // MARK: UICollectionViewDelegate
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         delegate?.closeItemList()
-        delegate?.showDirection(of: ItemModel.shared.anchors[indexPath.row])
+        delegate?.showDirection(of: ItemModel.shared.getList()[indexPath.row])
         collectionView.deselectItem(at: indexPath, animated: true)
     }
 
     
+}
+
+extension ItemListCollectionViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 150, height: 150)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 10
+    }
 }

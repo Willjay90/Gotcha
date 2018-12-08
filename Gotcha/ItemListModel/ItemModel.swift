@@ -8,25 +8,33 @@
 
 import ARKit
 
-typealias arItemList = (String, ARAnchor)
-
 protocol ItemListDragProtocol: class {
     func closeItemList()
-    func showDirection(of object: arItemList)
+    func showDirection(of object: ARItem)
+}
+
+struct ARItem {
+    let name: String
+    let anchor: ARAnchor
 }
 
 class ItemModel {
     
     static let shared = ItemModel()
     
-    var anchors: [arItemList] = [] {
-        didSet {
-            NotificationCenter.default.post(name: Notification.Name("ITEM_CHANGE"), object: nil)
-        }
+    private var itemsList: [ARItem] = []
+    
+    public func getList() -> [ARItem] {
+        return itemsList
     }
     
-    func removeAll() {
-        anchors.removeAll()
+    public func addItem(name: String, anchor: ARAnchor) {
+        let item = ARItem(name: name, anchor: anchor)
+        itemsList.append(item)
+    }
+    
+    public func removeAll() {
+        itemsList.removeAll()
     }
     
 }
